@@ -3,7 +3,7 @@ const crypto = require("crypto")
 
 exports.loginService = async (loginData) => {
     const {email, password} = loginData
-    const result = await loginUser(loginData); // login query
+    const result = await loginUser(loginData); 
     if(result.length > 0)
     {
         const salt = result[0].salt;
@@ -23,7 +23,7 @@ exports.loginService = async (loginData) => {
 };
 
 exports.signupService = async(signupData) => {
-    const result = await checkForExistingUser ( signupData );  // to check for existing user
+    const result = await checkForExistingUser ( signupData );  
 
     if(result.length > 0)
     {
@@ -38,7 +38,7 @@ exports.signupService = async(signupData) => {
         signupData.password = hashedPassword;
         signupData.salt = salt;
 
-        const insert = await signupUser( signupData ); // To insert new user
+        const insert = await signupUser( signupData ); 
         return insert;
     }
 }

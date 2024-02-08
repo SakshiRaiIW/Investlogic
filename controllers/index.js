@@ -2,12 +2,12 @@ const { loginService, signupService } = require("../services");
 
 exports.loginController = async (req, res) => {
     try {
-        // Taking data from body
+        
         const { email, password } = req.body;
         const emailRegex = /^[^\d][a-zA-Z\d._-]*[a-zA-Z][a-zA-Z\d._-]*@([a-zA-Z\d.-]+\.[a-zA-Z]{2,})$/;
 
-        // Checking for email or password 
-        if (!email || !password) {
+        
+        if (!password || !email  ) {
             return res.send({
                 status: 0,
                 success: false,
@@ -33,7 +33,7 @@ exports.loginController = async (req, res) => {
                 throw new Error("Wrong Email")
             }
 
-            // For successfull login
+            
             else {
                 res.send({
                     status: 1,
@@ -43,7 +43,7 @@ exports.loginController = async (req, res) => {
                 }); 
             }
         }
-    } catch (error) { // error handling
+    } catch (error) { 
         console.log(error);
         if (error.message == "Wrong Email")
         {
@@ -81,7 +81,6 @@ exports.signupController = async (req, res) => {
         const emailRegex = /^[^\d][a-zA-Z\d._-]*[a-zA-Z][a-zA-Z\d._-]*@([a-zA-Z\d.-]+\.[a-zA-Z]{2,})$/;
         const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@])[a-zA-Z\d@]+$/;
 
-        // checking whether data is received or not 
         if (!name || !email || !password) {
             return res.send({
                 status: 0,
@@ -95,7 +94,7 @@ exports.signupController = async (req, res) => {
             return res.send({
                 status: 0,
                 sucess: false,
-                message: "Email must contain atleast one letter, @ special character and it doesn't start with number.",
+                message: "Email must contain atleast one letter, @ special character and it shouldn't start with number.",
                 result: {}
             })
         }
@@ -122,7 +121,7 @@ exports.signupController = async (req, res) => {
             const signupData = { name, email, password };
             const result = await signupService(signupData); // calling signup services
 
-            // If user already present in database then tell them to login
+            // If user already exists ask for logging in
             if (result && result.length > 0) {
                 return res.send({
                     status: 0,
