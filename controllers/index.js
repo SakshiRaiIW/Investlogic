@@ -1,105 +1,73 @@
-const { loginService, signupService } = require("../services");
+const express = require("express");
+const  {loginService, signUpService} =require('../services');
+const jwt = require('jsonwebtoken');
 
-exports.loginController = async (req, res) => {
-    try {
-        
-        const { email, password } = req.body;
-        const emailRegex = /^[^\d][a-zA-Z\d._-]*[a-zA-Z][a-zA-Z\d._-]*@([a-zA-Z\d.-]+\.[a-zA-Z]{2,})$/;
 
-        
-        if (!password || !email  ) {
-            return res.send({
-                status: 0,
-                success: false,
-                message: "Please enter email or password",
-                result: {},
-            });
-        }
 
-        else if (!emailRegex.test(email)) {
-            return res.send({
-                status: 0,
-                sucess: false,
-                message: "Email must contain atleast one letter, @ special character and it doesn't start with number.",
-                result: {}
-            })
-        }
+const emailRegex = /^[^\d][a-zA-Z\d.-][a-zA-Z][a-zA-Z\d.-]@([a-zA-Z\d.-]+\.[a-zA-Z]{2,})$/;
+const passwordRegex = /^(?=.[a-z])(?=.[A-Z])(?=.\d)(?=.[@])[a-zA-Z\d@]+$/;
 
-        else {
-            const loginData = {email, password};
-            const result = await loginService(loginData); // Calling login services
 
-            if (result && result.length == 0) {
-                throw new Error("Please enter correct email")
-            }
 
-            
-            else {
-                res.send({
-                    status: 1,
-                    success: true,
-                    message: "Successfully Login",
-                    result,
-                }); 
-            }
-        }
-    } catch (error) { 
-        console.log(error);
-        if (error.message == "Plaese enter correct email")
-        {
-            return res.send({
-                status: 0,
-                success: false,
-                message: "User doesn't exist!! Please Register",
-                result: {},
-            });
-        }
-        else if(error.message == "Wrong Password")
-        {
-            return res.send({
-                status: 0,
-                success: false,
-                message: "Wrong Password",
-                result: {},
-            });
-        }
-        else{
-        return res.send({
-            status: 0,
-            success: false,
-            message: "Error in Login controller",
-            result: {},
-        });
+const verifyToken = (req, res, next) => {
+    secretkey='389377947473';
+    const myToken = req.cookies.myToken;
+
+    console.log("myToken",myToken);
+    if (!myToken) {
+        return res.status(401).send("User not authenticated");
     }
-}
+
+    jwt.verify(myToken, secretkey, (err, payload) => {                                                  
+        if (err) {
+            // Token verification failed
+            console.error("JWT verification error:", err);
+            return res.status(403).send("Token verification failed");
+        }
+
+        if (!payload) {
+            // Invalid token
+            return res.status(401).send("User not authenticated");
+        }
+
+        console.log("Payload:", payload);
+        req.email= payload.email; 
+        req.password=payload.password;
+        
+    });
 };
 
 
-exports.signupController = async (req, res) => {
+
+
+    
+    const signUpController=async(req,res)=>{
+    const {name, email ,  password} =req.body;
     try {
+        
+        
         const { name, email, password } = req.body;
-        const emailRegex = /^[^\d][a-zA-Z\d._-]*[a-zA-Z][a-zA-Z\d._-]*@([a-zA-Z\d.-]+\.[a-zA-Z]{2,})$/;
-        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@])[a-zA-Z\d@]+$/;
 
         if (!name || !email || !password) {
             return res.send({
                 status: 0,
                 sucess: false,
-                message: "Please enter name, email or password",
+                message: "empty input",
                 result: {}
             })
         }
+
 
         else if (!emailRegex.test(email)) {
             return res.send({
                 status: 0,
                 sucess: false,
-                message: "Email must contain atleast one letter, @ special character and it shouldn't start with number.",
+                message: "enter a valid email.",
                 result: {}
             })
         }
 
-        else if (password.length < 6) {
+        else if (password.length <=6) {
             return res.send({
                 status: 0,
                 sucess: false,
@@ -112,43 +80,114 @@ exports.signupController = async (req, res) => {
             return res.send({
                 status: 0,
                 sucess: false,
-                message: "Password must contain atleast one lowercase, one uppercase, one number and only @ special character is allowed",
+                message: "password should follow the pattern ",
                 result: {}
             })
         }
 
-        //signup services
         else {
             const signupData = { name, email, password };
-            const result = await signupService(signupData); 
+            const result = await signUpService(signupData);
 
-            // If user already exists ask for logging in
-            if (result && result.length > 0) {
-                return res.send({
-                    status: 0,
-                    success: false,
-                    message: "User already exists! Please Login",
-                    result: {},
-                });
-            }
-
-            // For successful register
-            else {
-                return res.send({
-                    status: 1,
-                    sucess: true,
-                    message: "Successfully registered",
-                    result
-                })
-            }
         }
-    } catch (error) {// error handling
-        console.log(error);
+    }
+    catch(error){
+        console.error('Error:', error);
+        res.status(500).json({ success: false, message: 'Internal server error' });
+        console.log(res);
+  
+        }
+}
+
+const loginController=async(req,res)=>{  
+    debugger
+    try{
+    const { email, password } = req.body;
+        
+    if (!email || !password) {
         return res.send({
             status: 0,
             success: false,
-            message: "Error in Signup controller",
+            message: "Please enter email or password",
+            result: {},
+        });
+    }
+
+    else if (!emailRegex.test(email)) {
+        return res.send({
+            status: 0,
+            sucess: false,
+            message: "Email must contain atleast one letter, @ special character and it doesn't start with number.",
             result: {}
         })
     }
+
+    else {
+        const loginData = {email, password};
+        const result = await loginService(loginData); // Calling login services
+
+        if (result && result.length == 0) {
+            throw new Error("Wrong Email")
+        }
+
+        // For successfull login
+        else {
+
+            const secretKey = '389377947473';
+            const token = jwt.sign(loginData, secretKey, { expiresIn: '30s' }); 
+            console.log('JWT token:', token);
+            res.cookie('myToken', token, {httpOnly: true });
+            
+
+
+            res.send({
+                status: 1,
+                success: true,
+                message: "Successfully Login",
+                result,
+            }); 
+        }
+    }
+
+}
+ catch (error) { // error handling
+    console.log(error);
+    if (error.message == "Wrong Email")
+    {
+        return res.send({
+            status: 0,
+            success: false,
+            message: "User doesn't exist!! Please Register",
+            result: {},
+        });
+    }
+    else if(error.message == "Please enter the correct password")
+    {
+        return res.send({
+            status: 0,
+            success: false,
+            message: "Wrong Password",
+            result: {},
+        });
+    }
+    else{
+        return res.send({
+            status: 0,
+            success: false,
+            message: "Error in Login controller",
+            result: {},
+        });
+    }
+}
+    };
+
+
+    
+
+
+
+module.exports={
+    signUpController,
+    loginController,
+    verifyToken
 }
