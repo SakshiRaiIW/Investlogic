@@ -30,7 +30,7 @@ exports.loginController = async (req, res) => {
             const result = await loginService(loginData); // Calling login services
 
             if (result && result.length == 0) {
-                throw new Error("Wrong Email")
+                throw new Error("Please enter correct email")
             }
 
             
@@ -45,7 +45,7 @@ exports.loginController = async (req, res) => {
         }
     } catch (error) { 
         console.log(error);
-        if (error.message == "Wrong Email")
+        if (error.message == "Plaese enter correct email")
         {
             return res.send({
                 status: 0,
@@ -117,9 +117,10 @@ exports.signupController = async (req, res) => {
             })
         }
 
+        //signup services
         else {
             const signupData = { name, email, password };
-            const result = await signupService(signupData); // calling signup services
+            const result = await signupService(signupData); 
 
             // If user already exists ask for logging in
             if (result && result.length > 0) {
