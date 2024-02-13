@@ -2,7 +2,9 @@ const express = require("express");
 const  {loginService, signUpService} =require('../services');
 const jwt = require('jsonwebtoken');
 
-
+const folderName = "/home/sakshi/MainProjectIW/frontend/public/pdf";
+const fs = require('fs');
+const pdfPath = "/home/sakshi/MainProjectIW/frontend/public/pdf /dummy.pdf";
 
 const emailRegex = /^[^\d][a-zA-Z\d.-][a-zA-Z][a-zA-Z\d.-]@([a-zA-Z\d.-]+\.[a-zA-Z]{2,})$/;
 const passwordRegex = /^(?=.[a-z])(?=.[A-Z])(?=.\d)(?=.[@])[a-zA-Z\d@]+$/;
@@ -36,9 +38,6 @@ const verifyToken = (req, res, next) => {
         
     });
 };
-
-
-
 
     
     const signUpController=async(req,res)=>{
@@ -181,13 +180,60 @@ const loginController=async(req,res)=>{
 }
     };
 
+const policyController = async (req, res) => {
+    try {
+        const policies = await fs.promises.readdir(folderName);
+        
+        const policyData = policies.map((policy, index) => ({
+            id: index + 1,
+            name: policy
+        }));
 
+        return res.send({
+            success: true,
+            status: 1,
+            message: "Successfully get PolicyDocs Data",
+            policyData
+        });
+    } catch (error) {
+        console.log(error);
+        return res.send({
+            success: false,
+            status: 0,
+            message: "Error in Policy Docs Controller"
+        });
+    }
+};
+
+
+const getPolicy  = async(req,res) =>{
+    try{
+        return res.send({
+            success: true,
+            status: 1,
+            message: "Pdf path",
+            result : pdfPath
+        });
+    }
+    catch (error) {
+        console.log(error);
+        return res.send({
+            success: false,
+            status: 0,
+            message: "Error in Get Policy Controller"
+        });
+    }
     
-
-
+}
 
 module.exports={
     signUpController,
     loginController,
-    verifyToken
+    verifyToken,
+    policyController,
+    getPolicy
 }
+
+
+
+
